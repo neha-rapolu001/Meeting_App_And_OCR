@@ -11,14 +11,8 @@ import {
   useState,
   useEffect
 } from "react";
-import {
-  Button,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "reactstrap";
 import { meeting_update } from "../../api";
+import { Button, Modal, Text, Group } from "@mantine/core";
 
 const DeleteMeetingModal = (props) => {
   const [id, setId] = useState("");
@@ -69,19 +63,30 @@ const DeleteMeetingModal = (props) => {
 
 
   return (
-    <Modal isOpen={props.isOpen} toggle={props.toggle}>
-        <ModalBody>
-          Are you sure you want to delete this meeting?
-        </ModalBody>
-        <ModalFooter>
-          <Button color="success" type="submit" onClick={handleSubmit}>
-            Yes
-          </Button>{" "}
-          <Button color="success" onClick={props.toggle}>
-            No
-          </Button>
-        </ModalFooter>
-    </Modal>
+    <Modal
+      opened={props.isOpen}
+      onClose={props.toggle}
+      title="Delete Meeting"
+      overlayProps={{
+        backgroundOpacity: 0.55,
+        blur: 3,
+      }}
+      size="sm"
+      padding="lg"
+    >
+      <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+        Are you sure you want to delete this Meeting?
+      </Text>
+
+      <Group position="apart">
+        <Button color="red" onClick={handleSubmit}>
+          Yes
+        </Button>
+        <Button color="gray" onClick={props.toggle}>
+          No
+        </Button>
+    </Group>
+  </Modal>
   );
 };
 
