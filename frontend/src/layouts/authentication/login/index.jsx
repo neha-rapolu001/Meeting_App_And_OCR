@@ -1,36 +1,18 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardBody,
-  Button,
-  Form,
-  FormGroup,
-  Label,
-  Input,
-  Container,
-  Row,
-  Col,
-} from "reactstrap";
+import { Button, TextInput, PasswordInput, Container, Title, Text, Box } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { login, getCookie, updateCookie as setcookie } from "../../../api";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { useMediaQuery } from '@mantine/hooks';
 
-function Login(props) {
-  const customTheme = {
-    primary: "#FFE658",
-    secondary: "#2E2E2E",
-    text: "#000",
-  };
-
+function Login() {
+  const isSmallScreen = useMediaQuery('(max-width: 1068px)');
+  
   useEffect(() => {
     if (getCookie("user") == null && getCookie("priv") == null) {
       setcookie("user", "");
       setcookie("priv", "");
     }
-
-    console.log(document.cookie);
     if (getCookie("user") !== "" && getCookie("priv") !== "") {
-      console.log("not here");
       navigate("/dashboard");
     }
   }, []);
@@ -59,38 +41,24 @@ function Login(props) {
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
-      errors: {
-        ...prevState.errors,
-        [name]: "",
-      },
+      errors: { ...prevState.errors, [name]: "" },
     }));
   };
 
   const validateForm = () => {
     const { username, password } = formData;
     const errors = {};
-
-    // Check for errors and update the errors object accordingly
-    if (!username) {
-      errors.username = "Username is required.";
-    }
-
-    if (!password) {
-      errors.password = "Password is required.";
-    }
-
+    if (!formData.username) errors.username = "Username is required.";
+    if (!formData.password) errors.password = "Password is required.";
     return errors;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
-      setFormData((prevState) => ({
-        ...prevState,
-        errors: { ...errors },
-      }));
+      setFormData((prevState) => ({ ...prevState, errors }));
       return;
     }
 
@@ -107,13 +75,18 @@ function Login(props) {
         document.cookie = "priv=" + response.data.priv;
         document.cookie = "church=" + response.data.church;
         document.cookie = "user-id=" + response.data.user_id;
+        document.cookie = "first_name=" + response.data.first_name;
         console.log(document.cookie, "cokkiesss");
         console.log(response.data);
         navigate("/dashboard");
       })
       .catch((error) => {
         const errors = {};
-        errors.invalid = error.response.data.message;
+        if (error.response.status === 403) {
+          errors.invalid = "Your account is inactive or deleted.";
+        } else {
+          errors.invalid = error.response.data.message;
+        }
         setFormData((prevState) => ({
           ...prevState,
           errors: { ...errors },
@@ -124,74 +97,133 @@ function Login(props) {
   };
 
   return (
-    <div className="center-fullscreen" >
-      <Container>
-        <Row>
-          <Col sm={{ size: 6, offset: 3 }}>
-            <Card className="my-card" style={{ backgroundColor: customTheme.primary, border: `1px solid ${customTheme.text}` }}>
-              <CardBody className="my-card-body">
-                <Form>
-                  <Card className="my-card" style={{ backgroundColor: customTheme.secondary, border: `1px solid ${customTheme.text}` }}>
-                    <CardBody className="my-card-body">
-                      {formData.errors.invalid && <div className="form-error" style={{ color: customTheme.text }}>{formData.errors.invalid}</div>}
-                      <FormGroup>
-                        <Label for="username" className="form-label" style={{ color: customTheme.text }}>
-                          Username
-                        </Label>
-                        <Input
-                          type="text"
-                          className="form-input"
-                          name="username"
-                          value={formData.username}
-                          onChange={handleChange}
-                          placeholder="Enter your username"
-                          style={{ backgroundColor: customTheme.primary, borderColor: formData.errors.username ? 'red' : customTheme.text }}
-                        />
-                        {formData.errors.username && <div className="invalid-feedback" style={{ color: 'red' }}>{formData.errors.username}</div>}
-                      </FormGroup>
-                      <FormGroup>
-                        <Label for="password" className="form-label" style={{ color: customTheme.text }}>
-                          Password
-                        </Label>
-                        <Input
-                          type="password"
-                          className="form-input"
-                          name="password"
-                          value={formData.password}
-                          onChange={handleChange}
-                          placeholder="Enter your password"
-                          style={{ backgroundColor: customTheme.primary, borderColor: formData.errors.password ? 'red' : customTheme.text }}
-                        />
-                        {formData.errors.password && <div className="invalid-feedback" style={{ color: 'red' }}>{formData.errors.password}</div>}
-                        <div className="text-right mt-2">
-                          <a className="link-text" href="/forgot-password" style={{ color: customTheme.text }}>
-                            Forgot password?
-                          </a>
-                        </div>
-                      </FormGroup>
-                    </CardBody>
-                  </Card>
-                </Form>
-                <Row>
-                  <div>
-                    <Card className="outer-card" style={{ backgroundColor: customTheme.primary, border: `1px solid ${customTheme.text}` }}>
-                      <CardBody>
-                        <Button className="my-button" color="success" onClick={handleSubmit} style={{ backgroundColor: customTheme.primary, color: customTheme.text }}>
-                          Sign In
-                        </Button>{" "}
-                        <Button className="my-button" color="success" onClick={handleSignUp} style={{ backgroundColor: customTheme.primary, color: customTheme.text }}>
-                          Subscribe
-                        </Button>
-                      </CardBody>
-                    </Card>
-                  </div>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </div>
+    <Container
+      style={{
+        minWidth: "100vw",
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #8490bd, #dae0f7)",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Background overlay circles */}
+      <>
+      {!isSmallScreen && (
+        <>
+      <div style={{
+        position: "absolute",
+        top: "10%",
+        left: "10%",
+        width: 500,
+        height: 500,
+        background: "#dadeed",
+        borderRadius: "50%",
+        zIndex: 1
+      }} />
+      <div style={{
+        position: "absolute",
+        bottom: "10%",
+        right: "20%",
+        width: 300,
+        height: 300,
+        background: "#dadeed",
+        borderRadius: "50%",
+        zIndex: 1
+      }} />
+      </>
+      )}
+      </>
+      <Box
+        style={{
+            width: isSmallScreen ? 500 : 600,
+            height: isSmallScreen ? 600 : 850,
+            padding: 40,
+            background: "white",
+            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+            borderRadius: "50%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            zIndex: 2,
+            position: "relative",
+        }}
+      >
+        <Title order={2} style={{ color: "#333", marginBottom: 20 }}>
+          Login
+        </Title>
+        <form onSubmit={handleSubmit} style={{ width: "100%", maxWidth: 300 }}>
+          <TextInput
+            label="Username"
+            placeholder="Enter your username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            error={formData.errors.username}
+            styles={{
+                label: { color: "#333" }, // Setting label color to a darker shade
+            }}
+          />
+          <PasswordInput
+            label="Password"
+            placeholder="Enter your password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            error={formData.errors.password}
+            style={{ marginTop: 10 }}
+            styles={{
+                label: { color: "#333" }, // Setting label color to a darker shade
+            }}
+          />
+          <Text
+            component="a"
+            href="/forgot-password"
+            size="sm"
+            style={{
+              display: "block",
+              marginTop: "10px",
+              color: "#1d8cf8",
+              textDecoration: "none",
+              textAlign: "right",
+            }}
+          >
+            Forgot password?
+          </Text>
+          {error && (
+            <Text color="red" size="sm" mt="sm">
+              {formData.errors.invalid}
+            </Text>
+          )}
+          <Button
+            type="submit"
+            fullWidth
+            style={{
+              borderRadius: "25px",
+              backgroundColor: "#00aaff",
+              marginTop: 20,
+            }}
+          >
+            Login
+          </Button>
+          <Button
+            onClick={handleSignUp}
+            fullWidth
+            style={{
+              borderRadius: "25px",
+              backgroundColor: "#ffaa00",
+              marginTop: 10,
+            }}
+          >
+            Subscribe
+          </Button>
+        </form>
+      </Box>
+    </Container>
   );
 }
 
