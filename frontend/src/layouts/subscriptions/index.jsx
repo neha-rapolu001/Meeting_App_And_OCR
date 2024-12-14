@@ -1,196 +1,299 @@
 import React, { useEffect, useState } from "react";
-import {
-
-  Table,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  FormGroup,
-  Label,
-  Input,
-  Form,
-  FormFeedback
-} from 'reactstrap';
-import { Container, Card, Title,NavLink, Text ,Button, TextInput } from "@mantine/core";
-import { get_subscriptions, add_subscription, update_subscription, delete_subscription } from '../../../src/api';
-import AppSidebar from '../../components/appSidebar';
+import { Card, Button, Table, Modal, TextInput, Title, Group, Text, Loader } from "@mantine/core";
+import AppSidebar from "../../components/appSidebar";
+import TopBar from "../../components/appTopBar";
+import { get_subscriptions, add_subscription, update_subscription, delete_subscription } from "../../api";
+import { useMediaQuery } from '@mantine/hooks';
 
 const SubscriptionsPage = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [modal, setModal] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false); // State for delete modal
   const [formData, setFormData] = useState({
-    id: '',
-    name: '',
-    price: '',
-    count: ''
+    id: "",
+    name: "",
+    price: "",
+    count: "",
   });
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [subscriptionToDelete, setSubscriptionToDelete] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     fetchSubscriptions();
   }, []);
 
-  const fetchSubscriptions = () => {
-    get_subscriptions()
-      .then((response) => {
-        const updatedSubscriptions = response.data.map(subscription => ({
-          ...subscription,
-          count: subscription.count || 0
-        }));
-        setSubscriptions(updatedSubscriptions);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  useEffect(() => {
+    if (isSmallScreen) {
+      setIsSidebarOpen(false);
+    } else {
+      setIsSidebarOpen(true);
+    }
+  }, [isSmallScreen]);
+
+  const fetchSubscriptions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await get_subscriptions();
+      setSubscriptions(response.data);
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleModal = (subscription = null) => {
-    setModal(!modal);
+    setModalOpen(!modalOpen);
     if (subscription) {
-      setSelectedSubscription(subscription);
       setFormData({
         id: subscription.id,
         name: subscription.name,
         price: subscription.price.toString(),
-        count: subscription.count.toString()
+        count: subscription.count.toString(),
       });
       setIsEditMode(true);
     } else {
-      setSelectedSubscription(null);
-      setFormData({ id: '', name: '', price: '', count: '' });
+      setFormData({ id: "", name: "", price: "", count: "" });
       setIsEditMode(false);
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.name.trim()) {
-      errors.name = "Name is required";
-    }
-    if (!formData.price.trim()) {
-      errors.price = "Price is required";
-    } else if (isNaN(formData.price)) {
-      errors.price = "Price must be a number";
-    }
-    if (!formData.count.trim()) {
-      errors.count = "Count is required";
-    } else if (isNaN(formData.count)) {
-      errors.count = "Count must be a number";
-    }
-
+    if (!formData.name.trim()) errors.name = "Name is required";
+    if (!formData.price.trim() || isNaN(formData.price)) errors.price = "Price must be a number";
+    if (!formData.count.trim() || isNaN(formData.count)) errors.count = "Count must be a number";
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0; // Return true if there are no errors
+    return Object.keys(errors).length === 0;
   };
 
-  const handleAddSubscription = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      add_subscription(formData)
-        .then(() => {
-          toggleModal();
-          fetchSubscriptions();
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+    try {
+      if (isEditMode) {
+        await update_subscription(formData.id, formData);
+      } else {
+        await add_subscription(formData);
+      }
+      toggleModal();
+      fetchSubscriptions();
+    } catch (error) {
+      console.error("Error saving subscription:", error);
     }
   };
 
-  const handleUpdateSubscription = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      const { id, ...updatedData } = formData;
-      update_subscription(id, updatedData)
-        .then(() => {
-          toggleModal();
-          fetchSubscriptions();
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
-  };
-
-  const handleDeleteSubscription = (id) => {
-    delete_subscription(id)
-      .then(() => {
+  const handleDelete = async () => {
+    if (subscriptionToDelete) {
+      try {
+        await delete_subscription(subscriptionToDelete.id);
+        setDeleteModalOpen(false);
         fetchSubscriptions();
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      } catch (error) {
+        console.error("Error deleting subscription:", error);
+      }
+    }
+  };
+
+  const openDeleteModal = (subscription) => {
+    setSubscriptionToDelete(subscription);
+    setDeleteModalOpen(true);
   };
 
   return (
-    <div style={{ display: "flex" }}>
-      <AppSidebar />
-      <div style={{position: "relative", left: "15%",width:"100%", height:"94vh"}} className="my-3">
-                <Card className="my-card  my-card-height schedule-card" style={{width:"80%"}}>
-        <h1 style={{textAlign:"center"}}>Subscriptions</h1>
-        <Button variant="filled" color="#FFD700" style={{width:"300px", marginBottom:"30px", color:"#2E2E2E"}} onClick={() => toggleModal()}>Add Subscription</Button>
-        <Table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Price</th>
-              <th>Count</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {subscriptions.map((subscription) => (
-              <tr key={subscription.id}>
-                <td>{subscription.name}</td>
-                <td>${subscription.price}</td>
-                <td>{subscription.count}</td>
-                <td>
-                  <Button variant="filled" color="#FFD700" style={{color:"#2E2E2E"}} onClick={() => toggleModal(subscription)}>Edit</Button>
-                  <Button  style={{marginLeft:"5px"}} variant="outline" color="#2E2E2E" onClick={() => handleDeleteSubscription(subscription.id)}>Delete</Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-
-        <Modal style={{color:"black"}} isOpen={modal} toggle={toggleModal}>
-          <ModalHeader toggle={() => toggleModal()}>{isEditMode ? 'Edit Subscription' : 'Add Subscription'}</ModalHeader>
-          <ModalBody>
-            <Form onSubmit={isEditMode ? handleUpdateSubscription : handleAddSubscription}>
-              <FormGroup>
-                <Label for="name">Name</Label>
-                <Input type="text" name="name" id="name" value={formData.name} onChange={handleInputChange} invalid={!!validationErrors.name} />
-                {validationErrors.name && <FormFeedback>{validationErrors.name}</FormFeedback>}
-              </FormGroup>
-              <FormGroup>
-                <Label for="price">Price</Label>
-                <Input type="text" name="price" id="price" value={formData.price} onChange={handleInputChange} invalid={!!validationErrors.price} />
-                {validationErrors.price && <FormFeedback>{validationErrors.price}</FormFeedback>}
-              </FormGroup>
-              <FormGroup>
-                <Label for="count">Count</Label>
-                <Input type="number" name="count" id="count" value={formData.count} onChange={handleInputChange} invalid={!!validationErrors.count} />
-                {validationErrors.count && <FormFeedback>{validationErrors.count}</FormFeedback>}
-              </FormGroup>
-              <Button variant="filled" color="#FFD700" style={{ color:"#2E2E2E"}}type="submit">{isEditMode ? 'Update' : 'Add'}</Button>{' '}
-              <Button variant="outline" color="#2E2E2E" onClick={() => toggleModal()}>Cancel</Button>
-            </Form>
-          </ModalBody>
-        </Modal>
-        </Card>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'auto' }}>
+      {/* TopBar */}
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 1000 }}>
+        <TopBar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       </div>
+        <div style={{ display: 'flex', flex: 1 }}>
+          {/* Sidebar */}
+          {isSidebarOpen && (
+            <div
+              style={{
+                width: '0',
+                backgroundColor: '#f4f4f4',
+                height: '100vh',
+                position: 'fixed', // Fixed for small screens, relative for large screens
+                top: 0,
+                left: 0,
+                zIndex: 999, // Higher z-index for small screens
+                transition: 'transform 0.3s ease', // Smooth open/close
+              }}
+            >
+              <AppSidebar />
+            </div>
+          )}
+        {/* Main Content */}
+        <div
+          style={{
+            flex: 1,
+            padding: "20px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            marginTop:"40px",
+          }}
+        >
+          <Card
+            style={{
+              width: isSmallScreen ? "100%" : "80%",
+              minWidth: "600px",
+              maxWidth: "1400px",
+              marginLeft: isSmallScreen? "0" : "170px",
+              padding: "20px",
+              boxSizing: "border-box",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "20px",
+              }}
+            >
+              <Title order={isSmallScreen ? 2 : 1} ml={10} mb={20}>
+                Subscriptions
+              </Title>
+              <Button mb={20} variant="filled" color="#6776ab" onClick={() => toggleModal()}>
+                Add Subscription
+              </Button>
+            </div>
+
+            {/* Loading or Table */}
+            {isLoading ? (
+              <div style={{ textAlign: "center", marginTop: "20px" }}>
+                <Loader size="xl" />
+              </div>
+            ) : (
+              <Table striped style={{ width: "100%" }}>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Price</Table.Th>
+                    <Table.Th>Count</Table.Th>
+                    <Table.Th>Actions</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {subscriptions.map((subscription) => (
+                    <Table.Tr key={subscription.id}>
+                      <Table.Td>{subscription.name}</Table.Td>
+                      <Table.Td>${subscription.price}</Table.Td>
+                      <Table.Td>{subscription.count}</Table.Td>
+                      <Table.Td>
+                        <Button
+                          variant="light"
+                          color="blue"
+                          onClick={() => toggleModal(subscription)}
+                          style={{ marginRight: "10px" }}
+                        >
+                          Edit
+                        </Button>
+                        <Button variant="outline" color="red" onClick={() => openDeleteModal(subscription)}>
+                          Delete
+                        </Button>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            )}
+          </Card>
+        </div>
+      </div>
+
+      {/* Modal for Add/Edit */}
+      <Modal 
+        opened={modalOpen} 
+        onClose={() => toggleModal()} 
+        title={isEditMode ? <strong style={{ fontSize:"20px"}}>Edit Subscription</strong> : <strong style={{ fontSize:"20px"}}>Add Subscription</strong>}
+        overlayProps={{
+          backgroundOpacity: 0.55,
+          blur: 3,
+        }}
+        >
+        <div>
+          <div style={{ marginBottom: "15px" }}>
+            <TextInput
+              label="Name"
+              placeholder="Subscription Name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              error={validationErrors.name}
+              required
+            />
+          </div>
+          <div style={{ marginBottom: "15px" }}>
+            <TextInput
+              label="Price"
+              placeholder="Subscription Price"
+              name="price"
+              value={formData.price}
+              onChange={handleInputChange}
+              error={validationErrors.price}
+              required
+            />
+          </div>
+          <div>
+            <TextInput
+              label="Count"
+              placeholder="Subscription Count"
+              name="count"
+              value={formData.count}
+              onChange={handleInputChange}
+              error={validationErrors.count}
+              required
+            />
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
+            <Button variant="filled" color="blue" onClick={handleSubmit} style={{ marginRight: "10px" }}>
+              {isEditMode ? "Update" : "Add"}
+            </Button>
+            <Button variant="outline" color="gray" onClick={() => toggleModal()}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        opened={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Delete Subscription"
+        overlayProps={{
+          backgroundOpacity: 0.55,
+          blur: 3,
+        }}
+        size="sm"
+        padding="lg"
+      >
+        <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+          Are you sure you want to delete this subscription?
+        </Text>
+
+        <Group position="apart">
+          <Button color="red" onClick={handleDelete}>
+            Yes
+          </Button>
+          <Button color="gray" onClick={() => setDeleteModalOpen(false)}>
+            No
+          </Button>
+        </Group>
+      </Modal>
     </div>
   );
 };
