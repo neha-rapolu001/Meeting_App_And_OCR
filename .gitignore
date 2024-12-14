@@ -1,0 +1,40 @@
+# macOS system files
+.DS_Store
+
+# Google Cloud SDK
+google-cloud-sdk/
+
+# Node.js dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Environment files
+.env
+
+# Build and distribution directories
+dist/
+build/
+out/
+
+# IDE and editor directories
+.vscode/
+.idea/
+
+# OS-generated files
+Thumbs.db
+Desktop.ini
+
+# Coverage and test directories
+coverage/
+*.lcov
+*.coveragerc
+
+# Python virtual environment
+venv/
+__pycache__/
+
+# Other system files
+*.swp
+*.swo

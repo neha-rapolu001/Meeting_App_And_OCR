@@ -1,0 +1,253 @@
+Backend Documentation for Developers
+
+I. Introduction
+
+  The code-base here documented constitutes the Django backend of a CRUD web
+app whose primary purpose is the organization and management of meetings, for
+use by those filling leadership roles in some organization. While this web app
+is intended to realize the vision of one Brian Beauford, a pastor based in
+southeastern Massachusetts, there is nothing religion/church specific about the
+app at the time of this writing (Dec. 2023). Instead, you'll find here a more
+general organization tool, appropriate not just for churches and their leaders,
+but for any organization and its leaders. More information about Brian's
+philosophy regarding meetings/leadership, including information regarding the
+accompanying organizational planner (a book) is available at Brian's website at
+productivepastor.com. While some high-level references to this philosophy may
+be made in this developer documentation, they will only be made in the service
+of explaining certain design decisions which may otherwise feel strange or
+arbitrary.
+
+II. Project Structure
+
+  The Django project is structured as follows:
+
+~/.../<meeting-app-cs682-root-dir>/backend/
+
+backend/  # project dir created by django-admin
+  asgi.py  # ASGI config
+  __init__.py  # top-level Python package init
+  settings.py  # project settings
+  swagger-info.py  # OpenAPI spec
+  urls.py  # top-level url management
+  wsgi.py  # WSGI config
+docs.txt  # you are here :)
+.gitignore  # top-level backend gitignore
+manage.py  # single-project command-line utility created by django-admin
+meeting/  # meeting "app" (package)
+  admin.py  # meeting admin module
+  apps.py  # meeting app config
+  __init__.py  # meeting Python package init
+  meeting_invitation.html  # html template for email automation
+  migrations/  #
+    .          # meeting migrations
+    .          #
+  models.py  # Meeting model
+  serializers.py  # meeting serializer
+  urls.py  # meeting urls
+  views.py  # meeting views
+person/  # person "app" (package)
+  admin.py  # person admin module
+  apps.py  # person app config
+  __init__.py  # person Python package init
+  migrations/  #
+    .          # person migrations
+    .          #
+  models.py  # Person model
+  serializers.py  # person serializer
+  urls.py  # person urls
+  views.py  # person views
+populate.sql  # script for populating db w/ dummy data (and valid login)
+quickstart/  # quickstart "app" (package) - for user management
+  admin.py  # quickstart admin module
+  apps.py  # quickstart app config
+  __init__.py  # quickstart Python package init
+  migrations/  #
+    .          # quickstart migrations
+    .          #
+  models.py  # quickstart models
+  serializers.py  # quickstart serializer
+  urls.py  # quickstart urls
+  views.py  # quickstart views
+requirements.txt  # for pip install
+staticfiles/  #
+  .           # Django staticfiles "app" (package)
+  .           #
+tasks/  # tasks "app" (package)
+  admin.py  # tasks admin module
+  apps.py  # tasks app config
+  __init__.py  # tasks Python package init
+  migrations/  #
+    .          # tasks migrations
+    .          #
+  models.py  # Task model
+  serializers.py  # tasks serializer
+  urls.py  # tasks urls
+  views.py  # tasks views
+templates/  # html templates
+  swagger/  # swagger templates for OpenAPI
+    swagger-ui.html  # swagger-ui html template
+
+III. Models
+
+  quickstart.User
+    email - EmailField - max length 255, unique: used as username
+    first_name - CharField - max length 30
+    last_name - CharField - max length 30
+    is_active - BooleanField - default True: can be used for account deletion
+    is_admin - BooleanField - default False: can be used for client's organizational
+                              hierarchy, for example, leader(s) or organization are
+			      admins and anyone else with access is not, though there
+			      are no features currently contingent on admin status
+
+    Notes: It is unclear to me  what purpose, if any, UserManager serves in the
+           app. I don't believe the inner class Task is being used either (our team
+	   certainly didn't use it). Given more time, I would have ripped out both
+	   of these legacy classes to see if they are doing anything at all. This
+	   should also have an AutoField to use as primary key, unless there is
+	   something I'm missing about the way the Django base classes work.
+
+  meeting.Meeting
+    id - AutoField - primary_key
+    name - CharField - max length 255
+    type - CharField - max length 255: frontend is currently allowing to one of
+                       eight predefined strings
+    date - DateField
+    time - TimeField
+    attendees - ManyToManyField with person.Person - blank True
+    agenda - TextField - default ''
+    notes - TextField - default ''
+    meeting_tasks - ManyToManyField with tasks.Task - blank True
+    deleted - BooleanField - default False: for soft deletion
+
+    Notes: These ManyToManyFields (attendees and meeting_tasks) have not been
+           implemented from the other end - that is, Meetings can have Tasks and
+	   Persons (and indeed are assigned Tasks and Persons using existing
+	   functionality), but those Tasks and Persons are not currently being
+	   assigned Meetings as they should be.
+
+  tasks.Task
+    id - AutoField - primary_key
+    task_name - CharField - max_length 255
+    employee_name - CharField - max_length 255: this field should be replaced with
+                    a ManyToManyField with person.Person.
+    start_date - DateField: probably don't need this field at all, though
+                 it is being used in the frontend currently
+    end_date - DateField
+    is_delete - BooleanField - default False: for soft deletion (not yet implemented)
+    is_completed - BooleanField - default False
+    priority - CharField - max_length 255
+    task_description - CharField - max_length 500
+    meeting_id - ForeignKey meeting.Meeting, on_delete CASCADE, related_name tasks:
+      	   This is a legacy attribute - a previous team presumably
+      	   added it as a means of associating each Task to a Meeting,
+      	   though each Task should actually be associated with 0 or
+      	   more Meetings. In the frontend, any time a Task is created
+      	   it is given 1 as a dummy value.
+    meetings = ManyToManyField with meeting.Meeting - blank True:
+           This is the attribute that should actually be used to associate a
+      	   Task with Meetings.
+
+    Notes: The relationship between Meetings and Tasks, though not yet fully
+           implemented, is central to the client's philosophy: a meeting should
+	   be focused around key action points, and these action points will in
+	   practice frequently be tasks which must be completed by a specified
+	   date. TODO: instead of employee_name, which is a CharField, there
+	   should be a ManyToManyField with person.Person.
+
+  person.Person
+    id - AutoField - primary_key
+    name - CharField - max_length 50
+    email - EmailField - max_length 80: for automated email notifications
+    deleted - BooleanField - default False: for soft deletion
+
+    Notes: A Person is someone who may be invited to a meeting or assigned a task,
+           - distinct from a User: a Person need not be (and most likely is not) a
+	   user of the app. TODO: add ManyToManyFields with meeting.Meeting and
+	   tasks.Task.
+
+IV. Views
+
+  quickstart
+    signup - POST - '/signup': register new user
+    login_view - POST - '/login': log in to app
+    logout_view - POST - '/logout': log out of app
+
+  meeting
+    schedule - GET - '/meeting': get all meetings (that aren't deleted)
+    schedule - POST - '/meeting': create meeting (save new meeting) and send email notifications
+    edit_meeting - POST - '/meeting/<int:pk>': edit meeting (save changes to meeting)
+    ocr - POST - '/meeting/ocr': hit google vision endpoint and parse response
+
+    Notes: The email notifications are not currently sent for meeting edits, only for new
+           meetings. They are sent to the emails of all the people added as meeting attendees
+	   (as well as Vivek's email address, which is hardcoded into the external API call -
+	   this should of course be replaced with the address of a future developer, and
+	   ultimately removed entirely if the app goes to production).
+
+  tasks
+    TaskViewSet.my_view - GET (...I assume...) - '/tasks': get all tasks
+    EditTasks.edit_task - PUT - 'tasks/<int:pk>': edit task (save changes to task)
+    EditTasks.delete_task - DELETE - 'tasks/<int:pk>': delete task (hard delete)
+
+    Notes: These need work. First of all, they should just be rewritten as function
+           views (unless there is some benefit to class views that I am unaware of
+	   and that we are unknowingly making use of here). Secondly, edit_task
+	   doesn't look like it's even functional currently, which is surprising,
+	   as I'm pretty sure one of my teammates fixed it at some point. Finally,
+	   soft delete should be implemented, at which point the delete_task view
+	   is no longer needed at all.
+
+  person
+    person - GET - '/person': get all persons (that aren't deleted)
+    person - POST - '/person': create person (save new person)
+
+    Notes: This POST functionality is unused: there is currently no in-app way for a
+           user to add/create a new Person.
+
+V. Closing Notes
+
+    Possibly the most notable flaw in the app right now is that every User
+  is served the same data (whereas it is obviously expected that each User
+  would have access to their own set of meetings/tasks/persons). This easiest
+  temporary resolution to this that comes to mind is to add a ForeignKey
+  attribute to each of person.Person, tasks.Task, and meeting.Meeting.
+  However, it would probably be best to talk more to Brian about his ideas
+  of subscription heirarchies before implementing anything. It seems to me
+  that for a given organization, there will probably be two tiers of users,
+  one of which (the upper-tier, possibly a single person in most cases) has
+  more access/features than the leaders/managers constituting the lower-tier.
+    The OCR will need much more work in order to be useful to users. The
+  approach taken was to allow the user to crop and uploaded image which is
+  processed and sent to the server in a POST request; the server, after
+  further data conversion, hits the appropriate Google Vision API endpoint,
+  then parses the response to separate it out into the necessary text fields.
+  Here are the current issues with this approach:
+
+      1) The sections on the meeting page of the client's accompanying
+         organizational planner (the page that this OCR is meant to read)
+	 are not entirely in line with the fields in the meeting form as
+	 requested by the client. For example, there are large allocations
+	 on the page for "Questions" and "Objective", though there are no
+	 such fields to populate in the meeting form. The contents of these
+	 sections (along with "Action Steps", which should perhaps be used
+	 to populate the associated task fields) are currently being lumped
+	 into the "Notes" field of the form (along with the actual contents
+	 of the "Notes" section).
+      2) There is no good, simple way to extract a date from the text on
+         the page, since it can be written in so many formats but must be
+	 rendered in a specific format. 12/19/2023, 19/12/2023, 12/19/23,
+	 19/12/23, 12/19, 19/12, Dec. 19, Dec. 19th, and on and on; all
+	 must be entered into the text field as "2023-12-19". This is a
+	 machine learning project in itself. In the meantime, the date is
+	 simply pulled into the "Name" field along with the meeting name.
+      3) The client includes drawings on the book page, and it is unclear
+         exactly how this should be handled.
+      4) The client's handwriting, while quite legible, makes notable use
+         of small upper-case characters in place of lower-case characters.
+	 This highlights the need for fine-tuning a machine learning model
+	 for each user.
+
+    All in all, it is clear that an adequate implementation of OCR for this
+  project will look more like a machine learning project than a web dev
+  project.
+

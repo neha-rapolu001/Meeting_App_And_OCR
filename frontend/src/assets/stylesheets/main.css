@@ -1,0 +1,621 @@
+body {
+
+  font-family: Verdana, sans-serif;
+  overflow-x: hidden;
+  
+  color: #FFFFFF;
+}
+
+.page-header {
+  font-weight: bolder;
+  font-size: large;
+}
+
+/*
+.bgImage{
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+}
+
+
+.bgImage::before {
+  content: "";
+  background-image: url(../images/bgImage4.jpg);
+  background-repeat: repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  filter: blur(5px);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+}
+
+.bgImage::after {
+  content: "";
+  background: linear-gradient(60deg, rgba(255, 255, 255, 0.5) 5%, rgba(255, 255, 255, 0.35));
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+}
+*/
+
+.main-content {
+  position: relative;
+  z-index: 1;
+}
+
+.card-head {
+  background-color: white;
+  display: flex;
+  justify-content: center;
+}
+
+.card-header {
+  background-color: rgba(200, 250, 200, 0.8);
+}
+
+.card-body {
+  background-color: rgba(200, 250, 200, 0.4);
+}
+
+.StatusBar {
+  margin-top: 25px;
+  margin-bottom: 25px;
+}
+
+.switch-text {
+  font-size: small;
+  margin-top: 1%;
+}
+
+.card-with-background {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 1.0);
+}
+
+.gradient-background {
+  background: linear-gradient(60deg, rgba(253, 182, 169, 0.5) 35%, rgba(0, 179, 255, 0.35) 100%);
+  height: 100vh;
+  width: 100vw;
+  overflow: auto;
+}
+
+.middle-order-card {
+  text-align: center;
+  margin-bottom: 2vh;
+}
+
+.middle-center {
+  position: relative;
+  top: 0;
+  left: 45px;
+}
+
+.middle-right {
+  position: relative;
+  top: 0;
+  left: 75px;
+}
+
+.card-text-number {
+  font-size: xx-large;
+  text-align: center;
+}
+
+.ml-auto {
+  margin-left: auto !important;
+}
+
+.new-meeting-button {
+  width: 100%;
+}
+
+.my-button {
+  width: 48%;
+}
+
+.form-input {
+  border-color: rgb(10, 90, 10);
+  background-color: rgba(200, 250, 200, 0.4);
+}
+
+.form-label {
+  color: rgb(10, 90, 10);
+}
+
+.form-task-row {
+  height: 50px;
+}
+
+.my-border {
+  border-color: green;
+}
+
+.vertical-card {
+  min-width: 35%;
+  min-height: 20%;
+  margin: 0 auto;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+
+
+
+
+
+
+
+
+
+.link-text {
+  font-weight: lighter;
+  font-size: small;
+}
+
+.calendar-card {
+  min-width: 70%;
+  max-width: 94%;
+  min-height: 80%;
+  max-height:100%;
+  margin: 0 auto;
+  border-radius: 10px;
+  /* margin-left: 28%; */
+}
+
+.image-task {
+  min-width: 70%;
+  max-width: 94%;
+  max-height:60%;
+}
+
+.header-card {
+  display: flex;
+  /* position: ; */
+  min-width: 25%;
+  min-height: 80%;
+  /* margin-left: 28%; */
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: lightgray;
+  opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: lightgray
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+  color: lightgray
+}
+
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  padding: 5px;
+  /*font-family: Arial, sans-serif;*/
+  family: Verdana;
+}
+
+.calendar > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.calendar .days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-gap: 10px;
+  margin-top: 10px;
+}
+
+.calendar .day {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.calendar .day:hover {
+  cursor: pointer;
+  background-color: #eee;
+}
+
+.calendar .day.active {
+  background-color: #0078d4;
+  color: #fff;
+}
+
+.calendar .day.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.calendar .day .number {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.calendar .day .events {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  color: #777;
+}
+
+.calendar .empty {
+  width: 100%;
+  height: 50px;
+  background-color: transparent;
+  border: none;
+}
+
+.my-card-height {
+  height: 97% !important;
+}
+
+.scrollButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 50%;
+}
+
+.layout-container {
+  position: relative;
+  left: 4%;
+}
+
+.my-card {
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.my-card-selected {
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  background-color: rgba(180, 240, 180, 0.8);
+}
+
+.my-card-body {
+  background-color: white;
+    flex-grow: 1;
+}
+
+
+
+.outer-card {
+  background-color: rgba(180, 240, 180, 0.5);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.my-task-card {
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  min-height: 70vh;
+}
+
+.card-margin {
+  margin-bottom: 5%;
+}
+
+/* TaskCalendar.css */
+
+.full-screen-calendar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.full-screen-calendar {
+  text-align: center;
+}
+
+.calendar-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.react-calendar__tile {
+  height: 100px; /* Adjust the height of each calendar cell */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.custom-calendar {
+  /* Add any additional custom styles for the calendar here */
+  width: 80%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 70vh;
+  border: none;
+  .react-calendar {
+    height: 100%;
+  }
+}
+
+.react-calendar__tile {
+  position: relative;
+}
+
+.react-calendar__tile:after {
+  content: attr(data-date);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.react-calendar__tile--hasActive {
+  background-color: rgba(169, 169, 169, 0.5);
+}
+
+.react-calendar__tile--hasActive:after {
+  background-color: rgba(169, 169, 169, 0.5);
+  color: white; /* Change the color as needed */
+  border-radius: 50%;
+  padding: 4px; /* Adjust padding to cover the number */
+}
+
+.date-and-todo-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 10px auto;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  text-align: center;
+}
+
+.pie-chart-progress {
+  /* min-height: 30vh; */
+  margin-bottom: 15px;
+}
+
+.calendar-schedule {
+  min-height: 50vh;
+}
+
+.date {
+  margin-bottom: 5px;
+}
+
+.todo-list {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.date h1 {
+  font-size: 48px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+}
+
+.date h2 {
+  font-size: 36px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+}
+
+.date h3 {
+  font-size: 24px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+}
+
+.todo-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.todo-items li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+.todo-items li button {
+  margin-left: 10px;
+  background-color: #ccc;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+}
+
+.empty-list-message {
+  margin: 0;
+  padding: 0;
+  font-style: italic;
+  color: #999;
+}
+
+.schedule-card {
+  /* height: 90vh; */
+  
+}
+
+.schedule-card-body {
+  overflow: overlay;
+}
+
+.circular-progress {
+  visibility: hidden;
+}
+
+.meeting-card {
+  background-color: rgba(200, 250, 200, 0.4);
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  
+}
+
+.center-fullscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.error-message {
+  color: red;
+  display: none;
+  margin-top: 5px;
+}
+
+.custom-dropdown{
+  min-width:200px;
+}
+.custom-dropdown .Dropdown-control {
+  border-color: #2E2E2E;
+  background-color:#ffe658f1;
+  border-radius: 5px;
+  color: #2E2E2E;
+  padding: 5px;
+}
+
+.custom-dropdown .Dropdown-menu {
+  background-color: #ffe658f1;
+  border-color: #2E2E2E;
+  border-radius: 5px;
+  color: #2E2E2E;
+}
+
+.custom-dropdown .Dropdown-option {
+  color: #2E2E2E;
+}
+
+.custom-dropdown .Dropdown-option:hover{
+  background-color: #2E2E2E;
+  color:#fffbe6;
+}
+
+.custom-dropdown .Dropdown-option.is-selected {
+  background-color: #2E2E2E;
+  color: #fffbe6;
+}
+
+
+.equal-height {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.equal-height > .col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  flex: 1 1 33.3333%;
+  max-width: 33.3333%;
+  box-sizing: border-box;
+}
+
+
+
+/* after ch */
+
+.sidebar {
+  display: flex;
+  justify-content: center;
+  background-color: #2E2E2E;
+  border-right: 1px solid #2E2E2E;
+  color: #FFFFFF;
+  height: 100vh;
+}
+
+.sidebar-menu-item {
+  background-color: #2E2E2E;
+  text-decoration:none;
+  text-align: center;
+  color: #FFFFFF;
+  padding: 5px 0;
+}
+
+MenuItem{
+  background-color: red;
+}
+
+MenuItem:hover{
+  background-color: none;
+}
+
+.sidebar-menu-item:hover {
+  color: #2E2E2E;
+  background-color: #FFFFFF;
+}
+
+
+
+.sidebar-menu-item-icon {
+  color: #FFFFFF;
+  background-color: #2E2E2E;
+  padding:2px;
+}
+
+
+
+
+
+/* Not sure what this is or if we need it. */
+.sidebar-card {
+  min-width: 25%;
+  min-height: 80%;
+  margin: 0 auto;
+  border-radius: 10px;
+  /* margin-left: 28%; */
+}
+
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .sidebar-menu-item {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  
+}
+

@@ -1,0 +1,133 @@
+Frontend Documentation for Developers
+
+I. Introduction
+
+  The code-base here documented constitutes the React frontend of a CRUD web
+app whose primary purpose is the organization and management of meetings, for
+use by those filling leadership roles in some organization. (See Introduction
+section of backend docs for more general/background information). The UI is
+largely based on a prototype made by the client (Brian), available at this
+address: https://www.loom.com/share/83e1e7e64c694ff5adf13822c9bf2c38 (ask
+Brian for demo if URL no longer working).
+
+II. Project Structure
+
+  The React project is structured as follows:
+
+~/.../<meeting-app-cs682-root-dir>/frontend/
+
+docs.txt  # you are here :)
+.gitignore  # top-level frontend gitignore
+node_modules/  #
+  .            # node.js modules
+  .            #
+package.json  # node.js project info and dependencies
+package-lock.json  node.js project dependencies (lock)
+public/  # public directory (sigh)
+  index.html  # React magic - you should probably leave this one be ^\_(oo)_/^
+  manifest.json  # you can use this for something if you want
+  robots.txt  # look it up if you want
+src/  # source for React app
+  api.js  # REST API (giving frontend access to backend endpoints via Axios)
+  App.css  # most of the css is actually in assets/stylesheets/main.css
+  App.js  # top-level React component - basically just a Router
+  assets/  # currently just a stylesheets directory with a single .css file
+    stylesheets/  # maybe that 's' is a typo
+      main.css  # this .css file is a monster
+  components/  # React components that presumably don't "belong" to a single layout
+    appSidebar/  # this is the sidebar rendered in all non-authentication layouts
+      index.js  # AppSidebar component source
+    modals/  # all modal components are here, presumably because some are used by both dashboard and taskAssignment layouts
+      CreateTaskModal.js  # modal component for creating a new task
+      DeleteMeetingModal.js  # modal component for deleting a meeting
+      DeleteTaskModal.js  # modal component for deleting a task
+      EditTaskModal.js  # modal component for editing a task
+      InformationModal.js  # modal component for displaying task information
+      InvitePeopleModal.js # modal component for adding/removing people from a meeting
+  index.css  # most of the css is actually in assets/stylesheets/main.css
+  index.js  # React magic - renders App component and calls reportWebVitals()
+  layouts/  # layout components (the components between which the App.js Router does its routing)
+    authentication/  # layouts related to user authentication
+      forgotPassword/  # layout for user password retrieval
+        index.js  # ForgotPassword component source
+      login/  # layout for user login
+        index.js  # Login component source
+      signup/  # layout for new user signup
+        index.js  # Signup component source
+    dashboard/  # layout for app's dashboard
+      components/  # components rendered by dashboard layout
+        DateAndTodoList.js  # wrapper for Calendar from react-big-calendar package
+      index.js  # Dashboard component source
+    schedule/  # layouts related to meeting CRUD
+      components/  # components rendered by schedule layout
+        MeetingCard.js  # Card component for displaying a meeting in schedule layout
+      index.js  # Schedule component source
+      meeting/  # layout for creating/editing meetings
+        components/  # components rendered by meeting layout
+	  NameCard.js  # Card component for displaying name of person invided to meeting
+	index.js  # Meeting component source
+    taskAssignment/  # layout for task CRUD
+      components/  # components related to taskAssignment layout
+        TaskCard.js  # Card component for displaying a task in taskAssignment layout
+	TaskTable.js  # table component for displaying tasks in dashboard layout
+      index.js  # Task component source
+    taskCalendar/  # layout for displaying tasks in calendar format
+      index.js  # TaskCalendar component source
+  reportWebVitals.js  # diagnostic provided by create-react-app
+
+III. Component Tree
+
+                                   App
+                                    |
+   -------------------------------------------------------------------------------
+   |          |          |          |           |          |          |          |
+Login  ForgotPassword  Signup   Dashboard*   Schedule*  Meeting*    Task*   TaskCalendar*
+                               /    |           |         |             \
+                              /     |           |         |              \
+                             /      |           |         |               \
+                DateAndTodoList  TaskTable  MeetingCard  InvitePeopleModal --------------
+                                 /                \               \        |             \
+        --------------------------                 \               \    CreateTaskModal  TaskCard
+        |            |           |                  \               \                           \
+EditTaskModal DeleteTaskModal InformationModal DeleteMeetingModal NameCard               --------------------------
+                                                                                         |            |           |
+                                                                                 EditTaskModal DeleteTaskModal InformationModal
+* - layout renders AppSidebar
+
+IV. Closing Notes
+
+  Here are some suggestions for work needed on these components.
+
+  Meeting
+
+    - When a meeting is opened for viewing/editing, the frontend is fetching all
+  persons and tasks in the database, the majority of which are filtered out,
+  leaving only those which belong to the meeting. This is obviously needlessly
+  expensive. The solution involves writing other API endpoints and adding views
+  to handle this in the backend, at which point the filtering logic currently
+  present in the frontend can be greatly simplified.
+    - Currently, only new tasks can be added to a meeting - existing tasks should
+  be able to be added.
+
+  InvitePeopleModal
+
+    - This modal should allow new people to be created. Currently, the app does
+    not allow for this at all (there should probably be another way to do this
+    as well, perhaps in a layout of its own).
+
+  TaskCard
+
+    - TaskCard should be redone in exactly the style of MeetingCard. This shouldn't
+    take very long.
+
+  TaskTable
+
+    - Seeing as how this table only renders high priority tasks, there is no reason
+    to include a column for priority.
+    - When the EditTaskModal and DeleteMeetingModal are rendered by TaskTable,
+    changes made by the user are not reflected in the TaskTable when the modal is
+    closed (until TaskTable is rerendered, either by browser refresh or navigating
+    away from and then returning to the layout). This needs to be corrected by having
+    TaskTable rerender its rows when the modal closes. This could be implemented in
+    the same manner it is implemented in the TaskCard component.
+

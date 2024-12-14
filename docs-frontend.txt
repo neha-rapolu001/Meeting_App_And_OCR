@@ -1,0 +1,126 @@
+Frontend Documentation for Developers
+
+I. Introduction
+
+  The code-base here documented constitutes the React frontend of a CRUD web
+app whose primary purpose is the organization and management of meetings, for
+use by those filling leadership roles in some organization. (See Introduction
+section of backend docs for more general/background information). The UI is
+largely based on a prototype made by the client (Brian), available at this
+address: https://www.loom.com/share/83e1e7e64c694ff5adf13822c9bf2c38 (ask
+Brian for demo if URL no longer working).
+
+II. Project Structure
+
+  The React project is structured as follows:
+
+~/.../<meeting-app-cs682-root-dir>/frontend/
+
+docs.txt  # you are here :)
+.gitignore  # top-level frontend gitignore
+node_modules/  #
+  .            # node.js modules
+  .            #
+package.json  # node.js project info and dependencies
+package-lock.json  node.js project dependencies (lock)
+public/  # public directory (sigh)
+  index.html  # React magic - you should probably leave this one be ^\_(oo)_/^
+  manifest.json  # you can use this for something if you want
+  robots.txt  # look it up if you want
+src/  # source for React app
+  api.js  # REST API (giving frontend access to backend endpoints via Axios)
+  App.css  # most of the css is actually in assets/stylesheets/main.css
+  App.js  # top-level React component - basically just a Router
+  assets/  # currently just a stylesheets directory with a single .css file
+    stylesheets/  # maybe that 's' is a typo
+      main.css  # this .css file is a monster
+  components/  # React components that presumably don't "belong" to a single layout
+    appSidebar/  # this is the sidebar rendered in all non-authentication layouts
+      index.js  # AppSidebar component source
+    appTopbar/  # this is the topbar rendered in all non-authentication layouts
+      index.js  # AppTopBar component source
+    modals/  # all modal components are here, presumably because some are used by both dashboard and taskAssignment layouts
+      AddPersonModal.js # modal component for adding a new person which is used in select people in meetings and tasks
+      CreateTaskModal.js  # modal component for creating a new task
+      DeleteMeetingModal.js  # modal component for deleting a meeting
+      DeleteTaskModal.js  # modal component for deleting a task
+      EditTaskModal.js  # modal component for editing a task
+      InformationModal.js  # modal component for displaying task information
+      InvitePeopleModal.js # modal component for adding/removing people from a meeting
+      MeetingInformationModal.jsx # modal component for displaying meeting information
+      TaskInformationAndEditModal.jsx # modal component for displaying task information and editing a task which is used in taskTable
+    pricing/ # this is the package selection page shows during sigup.(Marketing page)
+      Pricing_plan.jsx # layout for pricing(details from subscriptions are shown here)
+  index.css  # most of the css is actually in assets/stylesheets/main.css
+  index.js  # React magic - renders App component and calls reportWebVitals()
+  layouts/  # layout components (the components between which the App.js Router does its routing)
+    authentication/  # layouts related to user authentication
+      forgotPassword/  # layout for user password retrieval
+        index.js  # ForgotPassword component source
+      login/  # layout for user login
+        index.js  # Login component source
+      signup/  # layout for new user signup
+        index.js  # Signup component source
+    dashboard/  # layout for app's dashboard
+      components/  # components rendered by dashboard layout
+        CssLoader.jsx # Unique loader for Dashboard
+        DateAndTodoList.js  # wrapper for Calendar from react-big-calendar package
+      index.js  # Dashboard component source
+    schedule/  # layouts related to meeting CRUD
+      components/  # components rendered by schedule layout
+        MeetingCard.js  # Card component for displaying a meeting in schedule layout
+      index.js  # Schedule component source
+      meeting/  # layout for creating/editing meetings
+        components/  # components rendered by meeting layout
+	  NameCard.js  # Card component for displaying name of person invided to meeting
+	index.js  # Meeting component source
+    taskAssignment/  # layout for task CRUD
+      components/  # components related to taskAssignment layout
+        TaskCard.js  # Card component for displaying a task in taskAssignment layout
+	TaskTable.js  # table component for displaying tasks in dashboard layout
+      index.js  # Task component source
+    taskCalendar/  # layout for displaying tasks in calendar format
+      index.js  # TaskCalendar component source
+  reportWebVitals.js  # diagnostic provided by create-react-app
+  paymenthistory/ # layout for displaying all the payment historys only available to superuser.
+      index.js # PaymentHistory component for superuser
+  paymenthistoryA/ # layout for displaying the payments assocociated with their churches, available to admins only.
+      index.js # PaymenHistoryA component for admins
+  users/ # layout for church users CRUD
+    index.js # users component
+  subscriptions/ # layout for subscriptions(plan details) CRUD, details to be shown during signup. Available to only superuser
+    index.js # subscriptions component
+  subscribers/ # layout to show the details of subscribers (Admin, church and subscribed package). Available to only superuser
+    index.js # subscribers layout
+  editChurch/ # layout to view, delete and update churches details. Available to only superuser
+    index.js # editChurch layout
+  people/ # layout for people CRUD
+    index.js # people layout
+  
+
+III. Component Tree
+
+                                   App
+                                    |
+   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+   |          |          |          |                     |          |          |          |                |         |           |             |                |                      |
+Login  ForgotPassword  Signup   Dashboard*             Schedule*  Meeting*    Task*   TaskCalendar*       Users     People    EditChurch    Subscribers     Subscriptions          PaymentHistory
+                               /    |     \                |         |             \                         |         |                                          |                      |
+                              /     |      \               |         |              \                        |         |                                     SubscriptionModal           |  
+                             /      |       \              |         |               \                       |         |                                                                / \
+                DateAndTodoList  TaskTable  CssLoader  MeetingCard  AddPersonModal    --------------      UserModal  PeopleModal                                                       /   \
+                                 /                        / \                          |             \                                                                  PaymentUpdateModal  CardDetailsModal
+                                /                        /   \                      CreateTaskModal  TaskCard
+                               /                        /     \                                           \
+                TaskInformationAndEditModal            /  DeleteMeetingModal                        --------------------------
+                                          MeetingInformationModal                                   |            |           |
+                                                                                           EditTaskModal DeleteTaskModal InformationModal
+* - layout renders AppSidebar and AppTopBar
+
+IV. Closing Notes
+
+  Here are some suggestions for work needed on these components.
+
+The UI has been revamped, and the new UI toolkit has been integrated. However, further refinements to the CSS are still required to achieve a 
+polished, cohesive look across the application. The layout, design and responsiveness are largely in place, but additional styling adjustments 
+could to be implemented for a more seamless user experience.

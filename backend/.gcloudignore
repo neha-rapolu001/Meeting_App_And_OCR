@@ -1,0 +1,72 @@
+# This file specifies files that are *not* uploaded to Google Cloud
+# using gcloud. It follows the same syntax as .gitignore, with the addition of
+# "#!include" directives (which insert the entries of the given .gitignore-style
+# file at that point).
+#
+# For more information, run:
+#   $ gcloud topic gcloudignore
+#
+.gcloudignore
+# If you would like to upload your .git directory, .gitignore file or files
+# from your .gitignore file, remove the corresponding line
+# below:
+.git
+.gitignore
+
+*.sqlite3
+*.jpeg
+*.png
+
+# Python pycache:
+__pycache__/
+# Ignored by the build system
+/setup.cfg
+
+# Ignore Python cache directories
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment directories
+venv/
+env/
+.venv/
+
+# Ignore local configuration files
+*.env
+*.local
+
+# Ignore log files
+*.log
+
+# Ignore coverage reports
+.coverage
+coverage.xml
+htmlcov/
+
+# Ignore testing directories and files
+tests/
+test_*.py
+
+# Ignore IDE/editor files
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Ignore other unnecessary files and directories
+.DS_Store
+*.bak
+*.tmp
+*.swp
+*.zip
+*.tar.gz
+*.tgz
+*.tgz
+*.tar
+*.gz
+*.egg-info/
+dist/
+build/
+node_modules/

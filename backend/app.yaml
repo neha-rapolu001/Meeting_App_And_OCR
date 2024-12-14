@@ -1,0 +1,11 @@
+runtime: python312  # Use Python 3.12 runtime
+entrypoint: gunicorn -b :$PORT backend.wsgi
+
+# Define static file handler for serving static files
+handlers:
+  - url: /static
+    static_dir: staticfiles
+
+  # Route everything else to Django's WSGI application
+  - url: /.*
+    script: auto

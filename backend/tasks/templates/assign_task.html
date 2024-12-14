@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Assignment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #1E90FF;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        .assigned-to {
+            font-weight: normal;
+        }
+        .assigned-to-label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Task Assigned: {{ task.task_name }}</h1>
+        <p>You have a new task assigned by <strong>{{ task.created_by }}</strong></p>
+
+        <div class="details">
+            <p><strong>Task Title:</strong> {{ task.task_name }}</p>
+            <p><strong>Due Date:</strong> {{ task.end_date }}</p>
+            <p><strong>Priority:</strong> {{ task.priority }}</p>
+            <p><strong>Description:</strong> {{ task.task_description }}</p>
+        </div>
+
+        <div class="assigned-to">
+            <span class="assigned-to-label">Assigned to:</span>
+            {% for employee in employees %}
+                {{ employee.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

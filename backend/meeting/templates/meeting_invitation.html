@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Invitation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #1E90FF;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        .attendees {
+            font-weight: normal;
+        }
+        .attendees-label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Meeting Invitation: {{ meeting.name }}</h1>
+        <p>You are invited to a meeting by <strong>{{ meeting.created_by }}</strong></p>
+
+        <div class="details">
+            <p><strong>Meeting Name:</strong> {{ meeting.name }}</p>
+            <p><strong>Date:</strong> {{ meeting.date }}</p>
+            <p><strong>Time:</strong> {{ meeting.time }}</p>
+            <p><strong>Agenda:</strong> {{ meeting.agenda }}</p>
+            <p><strong>Objective:</strong> {{ meeting.objective }}</p>
+            <p><strong>Notes:</strong> {{ meeting.notes }}</p>
+        </div>
+
+        <div class="attendees">
+            <span class="attendees-label">Attendees:</span>
+            {% for attendee in attendees %}
+                {{ attendee.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

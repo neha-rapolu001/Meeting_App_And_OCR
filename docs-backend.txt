@@ -1,0 +1,336 @@
+Backend Documentation for Developers
+
+I. Introduction
+
+  The code-base here documented constitutes the Django backend of a CRUD web
+app whose primary purpose is the organization and management of meetings, for
+use by those filling leadership roles in some organization. This version of the app
+has more functionlities than before. The app now contains meetings and tasks 
+associated with churches and users. The app also now works according the hierarchy
+the pastor told us (Superuser, Admin, Leader). The app can now accept payments and A
+subscription like model has been implemented.
+
+II. Project Structure
+
+  The Django project is structured as follows:
+
+~/.../<meeting-app-cs682-root-dir>/backend/
+
+backend/  # project dir created by django-admin
+  asgi.py  # ASGI config
+  __init__.py  # top-level Python package init
+  settings.py  # project settings
+  swagger-info.py  # OpenAPI spec
+  urls.py  # top-level url management
+  wsgi.py  # WSGI config
+docs.txt  # you are here :)
+.gitignore  # top-level backend gitignore
+.gcloudignore  # for GCP deployment
+app.yaml  # configuration file for GCP App Engine deployment
+manage.py  # single-project command-line utility created by django-admin
+meeting/  # meeting "app" (package)
+  admin.py  # meeting admin module
+  apps.py  # meeting app config
+  __init__.py  # meeting Python package init
+  meeting_invitation.html  # html template for email automation
+  migrations/  #
+    .          # meeting migrations
+    .          #
+  models.py  # Meeting model
+  serializers.py  # meeting serializer
+  urls.py  # meeting urls
+  views.py  # meeting views
+  templates/  # HTML templates
+    meeting_invitation.html  # email template for inviting to meetings
+person/  # person "app" (package)
+  admin.py  # person admin module
+  apps.py  # person app config
+  __init__.py  # person Python package init
+  migrations/  #
+    .          # person migrations
+    .          #
+  models.py  # Person model
+  serializers.py  # person serializer
+  urls.py  # person urls
+  views.py  # person views
+populate.sql  # script for populating db w/ dummy data (where superuser credentials are getting loaded)
+quickstart/  # quickstart "app" (package) - for user management
+  admin.py  # quickstart admin module
+  apps.py  # quickstart app config
+  __init__.py  # quickstart Python package init
+  migrations/  #
+    .          # quickstart migrations
+    .          #
+  models.py  # quickstart models
+  serializers.py  # quickstart serializer
+  urls.py  # quickstart urls
+  views.py  # quickstart views
+requirements.txt  # for pip install
+staticfiles/  #
+  .           # Django staticfiles "app" (package)
+  .           #
+tasks/  # tasks "app" (package)
+  admin.py  # tasks admin module
+  apps.py  # tasks app config
+  __init__.py  # tasks Python package init
+  migrations/  #
+    .          # tasks migrations
+    .          #
+  models.py  # Task model
+  serializers.py  # tasks serializer
+  signals.py  # tasks signals
+  urls.py  # tasks urls
+  views.py  # tasks views
+  templates/  # HTML templates
+    assign_task.html  # email template for assigning tasks
+templates/  # html templates
+  swagger/  # swagger templates for OpenAPI
+    swagger-ui.html  # swagger-ui html template
+  .
+  .
+church/ # church  "app" (package)
+  admin.py # church admin module
+  apps.py # church app config
+  migrations/ 
+    .
+    .            #church migrations
+  __inint__.py # church python package init
+  models.py  # church model
+  serializers.py  # church serializer
+  urls.py  # church urls
+  views.py  # church views
+.
+.
+person/
+  admin.py         # person admin module
+  apps.py          # person app config
+  migrations/      # person migrations
+    .
+    .
+  __init__.py      # person python package init
+  models.py        # person model
+  serializers.py   # person serializer
+  urls.py          # person urls
+  views.py         # person views
+.
+.
+subscription/
+  admin.py         # subscription admin module
+  apps.py          # subscription app config
+  migrations/      # subscription migrations
+    .
+    .
+  __init__.py      # subscription python package init
+  models.py        # subscription model
+  serializers.py   # subscription serializer
+  urls.py          # subscription urls
+  views.py         # subscription views
+.
+.
+payment/
+  admin.py         # payment admin module
+  apps.py          # payment app config and the schedule for monthly subscription renewal
+  migrations/      # payment migrations
+    .
+    .
+  __init__.py      # payment python package init
+  models.py        # payment model
+  serializers.py   # payment serializer
+  urls.py          # payment urls
+  views.py         # payment views
+.
+.
+requestuser/
+  admin.py         # requestuser admin module
+  apps.py          # requestuser app config
+  migrations/      # requestuser migrations
+    .
+    .
+  __init__.py      # requestuser python package init
+  models.py        # requestuser model
+  serializers.py   # requestuser serializer
+  urls.py          # requestuser urls
+  views.py         # requestuser views
+
+
+
+
+III. Models
+church.Church
+  id - AutoField - primary_key
+  name - CharField - max_length 50, blank=True, null=True
+  address - CharField - max_length 200, blank=True, null=True
+  ph_no - CharField - max_length 10, blank=True, null=True
+  email - CharField - max_length 20, blank=True, null=True
+  website - CharField - max_length 30, blank=True, null=True
+  subscription - ForeignKey (Subscription) - on_delete=models.CASCADE, related_name='churchSubscription', blank=True, null=True
+  deleted - BooleanField - default False
+  date_created - DateTimeField - auto_now_add=True
+  Notes:
+  A Church is an organization that may have various attributes like name, address, phone number, email, and website.
+  The subscription field links to a Subscription model, indicating the church's subscription details.
+  The deleted field is used for soft deletion.
+  The date_created field records the creation time of the record.
+  The ChurchManager class provides a custom manager with a createChurch method for creating Church instances.
+
+meeting.Meeting
+  id - AutoField - primary_key
+  name - CharField - max_length 255
+  type - CharField - max_length 255
+  date - DateField
+  time - TimeField
+  attendees - ManyToManyField ('person.Person', blank=True)
+  agenda - TextField - default ''
+  notes - TextField - default ''
+  notes_image - URLField - max_length 500, null=True, blank=True
+  objective - TextField - default ''
+  questions - TextField - default ''
+  action_steps - TextField - default ''
+  meeting_tasks - ManyToManyField ('tasks.Task', blank=True)
+  deleted - BooleanField - default False
+  created_by - ForeignKey (User) - on_delete=models.CASCADE, related_name='meetinguser'
+  church - ForeignKey (Church) - on_delete=models.CASCADE, related_name='meetingchurch'
+  Notes:
+  Represents a meeting entity for the 'meeting' app.
+  The attendees field is a many-to-many relationship with the person.Person model.
+  The meeting_tasks field is a many-to-many relationship with the tasks.Task model.
+  The created_by field is a foreign key linking to the User model, indicating the user who created the meeting.
+  The church field is a foreign key linking to the Church model, indicating the church associated with the meeting.
+  The deleted field is used for soft deletion.
+  name, type, date, time, agenda, objective, questions, action steps and notes provide detailed information about the meeting.
+  The notes_image field is used store a URL pointing to an image related to the meeting's notes in google cloud bucket.
+
+payment.Payment
+  payment_id - CharField - max_length 100
+  transaction_id - CharField - max_length 100
+  church - ForeignKey (Church) - on_delete=models.CASCADE, null=True, blank=True
+  date - DateTimeField
+  amount - IntegerField
+  success - BooleanField
+  email - EmailField
+  deleted - BooleanField - default False
+  Notes:
+  Represents a payment entity for the 'payment' app.
+  The payment_id and transaction_id fields store unique identifiers for the payment and transaction.
+  The church field is a foreign key linking to the Church model, allowing payments to be associated with a specific church. It can be null or blank.
+  The date field records the date and time of the payment.
+  The amount field stores the payment amount.
+  The success field indicates whether the payment was successful.
+  The email field stores the email associated with the payment.
+  The deleted field is used for soft deletion.
+
+person.Person
+  id - AutoField - primary_key
+  name - CharField - max_length 50
+  email - EmailField - max_length 80
+  deleted - BooleanField - default False
+  church - ForeignKey (Church) - on_delete=models.CASCADE, related_name='personchurch', null=True
+  Notes:
+  A Person is someone who may be invited to a meeting or assigned a task.
+  The name field stores the person's name.
+  The email field stores the person's email, which can be used for automated email notifications.
+  The deleted field is used for soft deletion.
+  The church field is a foreign key linking to the Church model, indicating the church the person is associated with. This can be null if not associated with a church.
+
+user.User
+  email - EmailField - max_length 255, unique=True, verbose_name 'email address'
+  first_name - CharField - max_length 30
+  last_name - CharField - max_length 30
+  is_active - BooleanField - default True
+  user_type - IntegerField - default 3
+  church - ForeignKey (Church) - on_delete=models.CASCADE, blank=True, null=True
+  password - CharField - max_length 200
+  deleted - BooleanField - default False
+  USERNAME_FIELD - 'email'
+  REQUIRED_FIELDS - ['first_name', 'last_name']
+  Notes:
+  Custom user model extending AbstractBaseUser with email as the unique identifier.
+  The UserManager class provides custom user creation methods including create_user, create_superuser, create_admin, and create_leader.
+  is_active indicates if the user account is active.
+  user_type indicates the role or type of the user (e.g., 1 for superuser, 2 for admin, 3 for regular user).
+  church links to the Church model, allowing association of a user with a church.
+  The deleted field is used for soft deletion.
+
+subscription.Subscription
+  id - AutoField - primary_key
+  name - CharField - max_length 100
+  price - FloatField
+  count - IntegerField - default 1
+  deleted - BooleanField - default False
+  Notes:
+  Represents a subscription entity.
+  The name field stores the name of the subscription.
+  The price field stores the price of the subscription as a float.
+  The count field stores the number of subscriptions, with a default value of 1.
+  The deleted field is used for soft deletion.
+  The __str__ method returns the name of the subscription for easy representation.
+
+task.Task
+  id - AutoField - primary_key
+  task_name - CharField - max_length 255
+  employee_name - CharField - max_length 255
+  start_date - DateField
+  end_date - DateField
+  deleted - BooleanField - default False
+  is_completed - BooleanField - default False
+  priority - CharField - max_length 255
+  task_description - CharField - max_length 500
+  meeting_id - ForeignKey (Meeting) - on_delete=models.CASCADE, related_name 'tasks', null=True, blank=True
+  meetings - ManyToManyField ('meeting.Meeting', blank=True)
+  created_by - ForeignKey (User) - on_delete=models.CASCADE, related_name 'taskuser'
+  church - ForeignKey (Church) - on_delete=models.CASCADE, related_name 'taskchurch'
+  Notes:
+  Represents a task entity.
+  The id field is the auto-incrementing primary key.
+  The task_name field stores the name of the task.
+  The employee_name field stores the name of the employee responsible for the task.
+  The start_date and end_date fields store the start and end dates of the task.
+  The deleted field is used for soft deletion.
+  The is_completed field indicates if the task has been completed.
+  The priority field stores the priority level of the task.
+  The task_description field provides a detailed description of the task.
+  The meeting_id field is a foreign key linking to a Meeting instance, allowing a task to be associated with a specific meeting.
+  The meetings field is a many-to-many relationship with the Meeting model, allowing multiple meetings to be associated with the task.
+  The created_by field is a foreign key linking to the User model, indicating the user who created the task.
+  The church field is a foreign key linking to the Church model, indicating the church associated with the task.
+
+
+
+IV. URLS or APIs
+  church
+    church/ - GET/POST - fetch all church details, or create new church
+    edit-church/<id> - PUT/DELETE - edit or delete church
+  meeting 
+    meeting/ - GET/POST - fetch all meeting details or create a new meeting
+    meeting/<pk> - PUT/DELETE - edit or delete meeting
+    meeting/ocr - POST - sends the extracted text from the document
+    upload/ - POST - Upload a notes image in the meeting
+  payment
+    charge/ - POST - charges amt from Card
+    payments/ - GET - fetch payment history
+    updatepayment/ - POST - create a new payment method
+    getcardinfo/ - POST - fetches the card details
+  person
+    person/ - POST - create a new person
+    get_person/<id> - GET - get the person of a particular church
+    person/<pid> - DELETE - delete the person
+  quickstart
+    users<cid> - GET - get users of a particular church
+    deleteuser/<user_id> - DELETE - delete user
+    updateuser/ - POST - update user
+    signup/ - POST - create 
+    login/ - POST - authenticate and login the user
+    logout/ - POST - logout the user
+  subscription
+    subscription/ - GET/POST - fetch all subscription or create a new subscription
+    subscription/<sid> - PUT/DELETE - update or delete subscription
+  tasks
+    tasks/<pk> - PUT/DELETE - update or delete task
+    tasks/ - GET/POST - fetch all tasks or create new task
+
+V. Closing Notes
+
+The app now includes enhanced features such as meeting and task management, subscription handling, payment integration, and notification emails 
+for updates like meeting invitations and task assignments. It has been deployed on Google Cloud App Engine. While the app is functional, extensive 
+testing is necessary to ensure all features work as expected and to verify proper user access control. Thorough testing will help identify and 
+address any issues before deployment.
