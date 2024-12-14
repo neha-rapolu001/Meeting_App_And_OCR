@@ -1,104 +1,101 @@
-/**
- * This component is the task information modal of the application. It contains form to task information modal.
- * 
- * @params: {props}
- * 
- * 
- */
+import React, { useEffect, useState } from "react";
+import { Button, Modal, Text, Group } from "@mantine/core";
+import { getCookie, isLeader, isSuperUser, meeting_view, get_users, get_church_data} from "../../api";
 
-import React, { useState, useEffect } from "react";
-import {
-  Button,
-  Form,
-  FormGroup,
-  Label,
-  Input,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-} from "reactstrap";
-import { tasks_create, tasks_update, task_view } from "../../api";
-import LinearProgress from "@mui/material/LinearProgress";
-import { styled } from "@mui/material/styles";
-import { Switch } from "@mui/material";
+const InformationModal = ({ isOpen, toggle, task }) => {
+  const [meetingName, setMeetingName] = useState(null);
+  const [userName, setUserName] = useState("");
+  const [churchName, setChurchName] = useState(null);
 
-// const Progress = styled(LinearProgress)(({ theme }) => ({
-//   height: 10,
-//   borderRadius: 5,
-//   [`&.${LinearProgress}-bar`]: {
-//     borderRadius: 5,
-//     backgroundColor: theme.palette.primary.main,
-//   },
-// }));
+  useEffect(() => {
+    const fetchMeetingName = async () => {
+      if (task?.meeting_id) {
+        try {
+          const response = await meeting_view(); // Fetch all meetings
+          const meeting = response?.data?.find((m) => m.id === task.meeting_id);
+          setMeetingName(meeting ? meeting.name : "Unknown Meeting");
+        } catch (error) {
+          console.error("Error fetching meeting name:", error);
+          setMeetingName("Unknown Meeting");
+        }
+      }
+    };
 
-const InformationModal = ({ isOpen, toggle, id, task, edit_task }) => {
-  // const [taskName, setTaskName] = useState("");
-  // const [taskDescription, setTaskDescription] = useState("");
-  // const [employeeName, setEmployeeName] = useState("");
-  // const [startDate, setStartDate] = useState("");
-  // const [endDate, setEndDate] = useState("");
-  // const [priority, setPriority] = useState("");
-  // const [dropdownOpen, setDropdownOpen] = useState(false);
+    const fetchUserName = async () => {
+      try {
+        const response = await get_users(getCookie("church"));
+        const user = response?.data?.find((u) => u.id === task.created_by);
+        setUserName(user ? user.first_name + " " + user.last_name: "Unknown User");
+      } catch (error) {
+        console.error("Error fetching user name:", error);
+        setUserName("Unknown User");
+      }
+    };
 
-  // useEffect(() => {
-  //   viewSingleTask();
-  // }, []);
+    const fetchChurchName = async () => {
+      try {
+        const response = await get_church_data();
+        const church = response?.data?.find((c) => c.id === task.church);
+        setChurchName(church ? church.name : "Unknown Church");
+      } catch (error) {
+        console.error("Error fetching church name: ", error);
+        setChurchName("Unknown Church");
+      }
+    }
 
-  // const startingDate = new Date(startDate);
-  // const endingDate = new Date(endDate);
-  // const presentDate = new Date();
-
-  // const viewSingleTask = () => {
-  //   console.log(id);
-  //   task_view(id)
-  //     .then((req) => {
-  //       // console.log(req);
-  //       const task = req.data;
-  //       console.log("task");
-  //       console.log(task);
-  //       // setTaskName(task.task_name);
-  //       // setEmployeeName(task.employee_name);
-  //       setStartDate(task.start_date);
-  //       setEndDate(task.end_date);
-  //       // setPriority(task.priority);
-  //       setTaskDescription(task.task_description);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //     });
-  // };
-
-  // const TestFunction = () => {
-  //   console.log(startingDate);
-  //   console.log(endingDate);
-  //   console.log(presentDate);
-  //   console.log(completedPercentage);
-  // };
-
-  // const totalDuration = endingDate.getTime() - startingDate.getTime();
-  // const completedDuration = presentDate.getTime() - startingDate.getTime();
-  // const completedPercentage = Math.floor((completedDuration / totalDuration) * 100) > 100 ? 100 : 
-  //                             Math.floor((completedDuration / totalDuration) * 100);
+    fetchMeetingName();
+    fetchUserName();
+    fetchChurchName();
+  }, [task?.meeting_id], [task?.created_by], [task?.church]);
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}><strong>{task.task_name}</strong></ModalHeader>
-      <ModalBody>
-      <p><strong>Task Description:</strong> {task.task_description}</p>
-      <p><strong>Start Date:</strong> {task.start_date}</p>
-      <p><strong>End Date:</strong> {task.end_date}</p>
-      <p><strong>Task Status:</strong> {task.is_completed ? <span>Completed</span> : <span>Pending</span>}</p>
-      </ModalBody>
-      <ModalFooter>
-        <Button color="secondary" onClick={toggle}>
+    <Modal
+      opened={isOpen}
+      onClose={toggle}
+      overlayProps={{
+        backgroundOpacity: 0.55,
+        blur: 3,
+      }}
+      title={<strong style={{fontSize: "22px"}}>{task?.task_name}</strong>}
+      size="lg"
+      padding="lg"
+    >
+      <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+        <strong>Task Description:</strong> {task?.task_description}
+      </Text>
+      <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+        <strong>Start Date:</strong> {task?.start_date}
+      </Text>
+      <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+        <strong>End Date:</strong> {task?.end_date}
+      </Text>
+      <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+        <strong>Priority:</strong> {task?.priority}
+      </Text>
+      <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+        <strong>Task Status:</strong> {task?.is_completed ? <span>Completed</span> : <span>Pending</span>}
+      </Text>
+      {task?.meeting_id &&(
+      <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+        <strong>Meeting:</strong> {meetingName}
+      </Text>
+      )}
+      {!isLeader() && (
+        <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+          <strong>Created by:</strong> {userName}
+        </Text>
+      )}
+      {isSuperUser() && (
+        <Text size="md" weight={500} style={{ marginBottom: '1rem' }}>
+          <strong>Church:</strong> {churchName}
+        </Text>
+      )}
+
+      <Group position="right">
+        <Button color="blue" onClick={toggle}>
           Close
         </Button>
-      </ModalFooter>
+      </Group>
     </Modal>
   );
 };

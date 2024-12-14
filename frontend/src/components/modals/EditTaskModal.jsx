@@ -1,27 +1,13 @@
 import React, { useState, useEffect } from "react";
-import {
-
-  Form,
-  FormGroup,
-  Label,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-} from "reactstrap";
-import { tasks_update } from "../../api";
-import { Container, Title, Card, Button, NavLink, Text, TextInput, Switch } from "@mantine/core";
-import { idID } from "@mui/material/locale";
+import { tasks_update, person_view, getCookie } from "../../api";
+import { Button, TextInput, Switch, MultiSelect, Modal, Group, Text, Select, Title, Textarea } from "@mantine/core";
+import AddPersonModal from "./AddPersonModal";
 
 const EditTaskModal = ({ isOpen, toggle, id }) => {
   const [formData, setFormData] = useState({
     task_name: '',
     task_description: '',
-    employee_name: '',
+    employees: [],
     start_date: '',
     end_date: '',
     priority: '',
@@ -34,18 +20,16 @@ const EditTaskModal = ({ isOpen, toggle, id }) => {
     meetings: ''
   });
   const [errors, setErrors] = useState({});
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [people, setPeople] = useState([]); // List of persons for MultiSelect
+  const [addPersonModalOpen, setAddPersonModalOpen] = useState(false);
 
   useEffect(() => {
     viewSingleTask();
+    fetchPeople();
   }, []);
 
   const viewSingleTask = () => {
     setFormData(id);
-  };
-
-  const toggleDropdown = () => {
-    setDropdownOpen(!dropdownOpen);
   };
 
   const handleChange = (event) => {
@@ -60,6 +44,17 @@ const EditTaskModal = ({ isOpen, toggle, id }) => {
     }));
   };
 
+  const handleEmployeesChange = (selectedIds) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      employees: selectedIds.map(Number), // Update selected person IDs
+    }));
+  };
+
+  const toggleNewPersonModal = () => {
+    setAddPersonModalOpen(!addPersonModalOpen); // Toggle Add Person modal
+  };
+
   const handleIsCompleted = (event) => {
     const { name, checked } = event.target;
     setFormData(prevFormData => ({
@@ -72,16 +67,14 @@ const EditTaskModal = ({ isOpen, toggle, id }) => {
     }));
   };
 
-  const handlePriorityChange = (e) => {
-    const selectedPriority = e.target.value;
-    setFormData(prevFormData => ({
-      ...prevFormData,
-      priority: selectedPriority
-    }));
-    setErrors(prevErrors => ({
-      ...prevErrors,
-      priority: '' // Clear any previous error for the changed input
-    }));
+  const fetchPeople = async () => {
+    const church = parseInt(getCookie("church"));
+    try {
+      const response = await person_view(church);
+      setPeople(response.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -94,7 +87,7 @@ const EditTaskModal = ({ isOpen, toggle, id }) => {
     }
 
     // Validation for employee name
-    if (!formData.employee_name.trim()) {
+    if (!formData.employees) {
       validationErrors.employee_name = 'Employee name is required.';
     }
 
@@ -121,114 +114,157 @@ const EditTaskModal = ({ isOpen, toggle, id }) => {
 
     // If no validation errors, proceed with submitting the form
     try {
-      const response = await tasks_update(formData.task_id, formData);
+      const response = await tasks_update(formData.id, formData);
       console.log(response.data.message);
-      toggle();
+      toggle(); // Close the modal after the update
     } catch (error) {
       console.error("Error updating tasks: ", error);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>Edit Task</ModalHeader>
-      <Form onSubmit={handleSubmit}>
-        <ModalBody>
-          <FormGroup>
-            
-            <Label style={{color:"black"}}for="task_name">Task Name *</Label>
-            <TextInput
-              type="text"
-              name="task_name"
-              id="task_name"
-              value={formData.task_name}
-              onChange={handleChange}
-            />
-            {errors.task_name && <div className="text-danger">{errors.task_name}</div>}
-          </FormGroup>
-          <FormGroup>
-            <Label for="task_description">Task Description</Label>
-            <TextInput
-              type="textarea"
-              name="task_description"
-              id="task_description"
-              placeholder="Enter task description"
-              value={formData.task_description}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label for="employee_name">Employee Name*</Label>
-            <TextInput
-              type="text"
-              name="employee_name"
-              id="employee_name"
-              value={formData.employee_name}
-              onChange={handleChange}
-            />
-            {errors.employee_name && <div className="text-danger">{errors.employee_name}</div>}
-          </FormGroup>
-          <FormGroup>
-            <Label for="start_date">Start Date*</Label>
-            <TextInput
-              type="date"
-              name="start_date"
-              id="start_date"
-              value={formData.start_date}
-              onChange={handleChange}
-            />
-            {errors.start_date && <div className="text-danger">{errors.start_date}</div>}
-          </FormGroup>
-          <FormGroup>
-            
-            <Label for="end_date">End Date*</Label>
-            <TextInput
-              type="date"
-              name="end_date"
-              id="end_date"
-              value={formData.end_date}
-              onChange={handleChange}
-            />
-            {errors.end_date && <div className="text-danger">{errors.end_date}</div>}
-          </FormGroup>
-          <FormGroup>
-            <Label for="is_completed">Is completed</Label>
-            <Switch
-              name="is_completed"
-              onChange={handleIsCompleted}
-              checked={formData.is_completed}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label for="taskPriority">Task Priority*</Label>
-            <Dropdown isOpen={dropdownOpen} value={formData.priority} toggle={toggleDropdown} >
-              <DropdownToggle caret>
-                {formData.priority ? formData.priority : "Select priority"}
-              </DropdownToggle>
-              <DropdownMenu>
-                <DropdownItem value="low" onClick={handlePriorityChange}>
-                  Low
-                </DropdownItem>
-                <DropdownItem value="medium" onClick={handlePriorityChange}>
-                  Medium
-                </DropdownItem>
-                <DropdownItem value="high" onClick={handlePriorityChange}>
-                  High
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-            {errors.priority && <div className="text-danger">{errors.priority}</div>}
-          </FormGroup>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="filled" color="rgba(90, 211, 250, 1)" type="submit">
-            Save Task
-          </Button>{" "}
-          <Button  variant="filled" color="rgba(214, 66, 66, 1)"onClick={toggle}>
-            Cancel
-          </Button>
-        </ModalFooter>
-      </Form>
+    <Modal
+      opened={isOpen}
+      onClose={toggle}
+      overlayProps={{
+        backgroundOpacity: 0.55,
+        blur: 3,
+      }}
+      title={<strong style={{fontSize:"20px"}}>Edit Task</strong>}
+      size="lg" // Make the modal larger
+      padding="lg" // Add extra padding inside the modal
+    >
+      <form onSubmit={handleSubmit}>
+        <TextInput
+          label="Task Name"
+          placeholder="Enter task name"
+          name="task_name"
+          value={formData.task_name}
+          onChange={handleChange}
+          error={errors.task_name}
+          size="md"
+          style={{ marginBottom: '1rem' }}
+          required
+        />
+        <Textarea
+          label="Task Description"
+          placeholder="Enter task description"
+          name="task_description"
+          value={formData.task_description}
+          onChange={handleChange}
+          error={errors.task_description}
+          size="md"
+          style={{ marginBottom: '1rem' }}
+          required
+          autosize
+          minRows={4}
+          maxRows={4}
+        />
+        <MultiSelect
+          label="Employee(s)"
+          data={people.map((person) => ({
+            value: person.id?.toString(),
+            label: person.name || "Unnamed Person",
+          }))}
+          value={formData.employees.map(String)}
+          onChange={handleEmployeesChange}
+          searchable
+          placeholder="Select employee(s)"
+          nothingFoundMessage={
+            <>
+              No matches found.{" "}
+              <Button
+                variant="outline"
+                color="blue"
+                size="xs"
+                onClick={toggleNewPersonModal}
+              >
+                Add Person
+              </Button>
+            </>
+          }
+          clearable
+          error={errors.employees}
+          size="md"
+          style={{ marginBottom: '1rem' }}
+          required
+        />
+        <TextInput
+          label="Start Date"
+          placeholder="Select start date"
+          name="start_date"
+          type="date"
+          value={formData.start_date}
+          onChange={handleChange}
+          error={errors.start_date}
+          size="md"
+          style={{ marginBottom: '1rem' }}
+          required
+        />
+        <TextInput
+          label="End Date"
+          placeholder="Select end date"
+          name="end_date"
+          type="date"
+          value={formData.end_date}
+          onChange={handleChange}
+          error={errors.end_date}
+          size="md"
+          style={{ marginBottom: '1rem' }}
+          required
+        />
+        <Group position="apart" style={{ marginBottom: '1rem' }}>
+          <Text weight={500} size="md" fw={500}>Is Completed</Text>
+          <Switch
+            name="is_completed"
+            checked={formData.is_completed}
+            onChange={handleIsCompleted}
+            size="md"
+          />
+        </Group>
+
+        {/* Dropdown for Task Priority */}
+        <Select
+          label="Task Priority"
+          value={formData.priority}
+          onChange={(value) => setFormData({ ...formData, priority: value })}
+          data={[
+            { value: "low", label: "Low" },
+            { value: "medium", label: "Medium" },
+            { value: "high", label: "High" },
+          ]}
+          error={errors.priority}
+          placeholder="Select priority"
+          size="md"
+          style={{ marginBottom: '1rem' }}
+          required
+        />
+
+        <Button
+          fullWidth
+          color="blue"
+          type="submit"
+          style={{ marginTop: '1rem' }}
+          size="md" // Make the button bigger
+        >
+          Save Task And Notify
+        </Button>
+      </form>
+      <Button
+        variant="outline"
+        color="red"
+        onClick={toggle}
+        fullWidth
+        style={{ marginTop: '1rem' }}
+        size="md"
+      >
+        Cancel
+      </Button>
+      <AddPersonModal
+        opened={addPersonModalOpen}
+        toggleModal={toggleNewPersonModal}
+        fetchPersons={fetchPeople} // Ensure the list is updated after adding a new person
+      />
     </Modal>
   );
 };
