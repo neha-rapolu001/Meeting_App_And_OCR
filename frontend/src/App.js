@@ -31,7 +31,7 @@ import PaymentHistoryA from './layouts/paymentHistoryA';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripePromise = loadStripe('pk_test_51QCnjCJk3xnHtdxhjW68SJyJB7FjCYpqUUzzaAdZKAwEiByXmnr6ZPhU9qEREQNya9Dl18ig2ANWyD29i7t04hKi003TUVsfAz');
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
 function App() {
   return (
