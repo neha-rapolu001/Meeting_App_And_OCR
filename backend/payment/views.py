@@ -9,9 +9,13 @@ from payment.models import Payment
 from stripe import Price
 from datetime import datetime
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Set your Stripe API key
-stripe.api_key = "sk_test_51QCnjCJk3xnHtdxhgIe0RNohGvJprRIWSGzNAsUkfDPIGV8p2rAEPSXj9oiKDiR5ILiWX2QULLRZK3y5YjsMeyfQ00Fr9SQyv6"
+stripe.api_key = os.getenv(STRIPE_API_KEY)
 
 @csrf_exempt
 def charge_card(request):
