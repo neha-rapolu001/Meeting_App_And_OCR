@@ -11,9 +11,13 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-import os
 from drf_yasg import openapi
 from google.oauth2 import service_account
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 import pymysql
 pymysql.install_as_MySQLdb()
@@ -33,27 +37,26 @@ ssl._create_default_https_context = ssl._create_unverified_context
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-   os.path.join(BASE_DIR, 'meeting-app-and-ocr-47e08cbd45d6.json')
+   os.path.join(BASE_DIR, os.getenv(GCP_CREDENTIALS))
 )
 
 # Google Cloud Storage configuration
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GS_BUCKET_NAME = 'meeting-app-and-ocr.appspot.com'
+GS_BUCKET_NAME = os.getenv(GCP_BUCKET_NAME)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gn&3vuy(13h%x$qzky(wg9w))qbxo%2okrwt7*_nt5t)5wqe48'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_FROM = 'neharapolu7115@gmail.com'
-EMAIL_HOST_USER = 'neharapolu7115@gmail.com'
-EMAIL_HOST_PASSWORD = 'lfbw dtaa hvzw orzd'
+EMAIL_HOST_USER = os.getenv(EMAIL_HOST_USER)
+EMAIL_HOST_PASSWORD = os.getenv(EMAIL_HOST_PASSWORD)
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
@@ -70,7 +73,7 @@ ALLOWED_HOSTS = [
 STATIC_URL = '/static/'
 #MEDIA_URL = '/media/'
 # Media files URL
-MEDIA_URL = 'https://storage.googleapis.com/meeting-app-and-ocr.appspot.com/'
+MEDIA_URL = os.getenv(GCP_MEDIA_URL)
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 #MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -164,11 +167,11 @@ DATABASES = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': '35.231.223.208',
-        'PORT': '3306',
-        'NAME': 'meeting_app_db',
-        'USER': 'neha',
-        'PASSWORD': 'DatabasePass@7',
+        'HOST': os.getenv(EMAIL_HOST_USER),
+        'PORT': os.getenv(DB_PORT),
+        'NAME': os.getenv(DB_NAME),
+        'USER': os.getenv(DB_USER),
+        'PASSWORD': os.getenv(DB_PASSWORD),
     }   
 }
 '''
