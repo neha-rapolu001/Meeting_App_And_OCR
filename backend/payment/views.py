@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set your Stripe API key
-stripe.api_key = os.getenv(STRIPE_API_KEY)
+stripe.api_key = os.getenv('STRIPE_API_KEY')
 
 @csrf_exempt
 def charge_card(request):
