@@ -46,3 +46,7 @@ Note:
 For OCR, install gcloud, authenticate and replace keys in the backend.
 For Stripe, create a new account and use the developer API keys provided
 For Database, either use sqlite3 or gcloud, according to requirement
+
+
+
+"Sumukh Gutta"
